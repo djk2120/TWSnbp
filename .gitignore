@@ -1,0 +1,10 @@
+.DS_Store
+*.bbl
+*~
+*.blg
+*.aux
+*.log
+*synctex*
+*.mat
+*.nc
+*core*
