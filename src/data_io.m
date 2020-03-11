@@ -23,7 +23,7 @@ assignin('caller','landarea',landarea)
 
 
 
-yy  = [1964,2013];
+yy  = [1965,2014];
 ny  = 1+yy(2)-yy(1);
 
 extrazero = cell(11,1);
