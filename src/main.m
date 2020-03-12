@@ -55,7 +55,7 @@ if ~exist('tws_ann','var')
 end
 
 gg = zeros(500,1);
-gg(1:5) = [0,0,0,1,0];
+gg(1:5) = [0,1,0,0,0];
 
 
 if gg(5)>0
@@ -171,7 +171,7 @@ if gg(4)>0
     xlabel('Ensemble member')
     ylabel({'Slope';'(derived from pdf)'})
 
-    printme = 1;
+    printme = 0;
     if printme 
         xdk = gcf;
         xdk.Units = 'inches';
@@ -180,94 +180,11 @@ if gg(4)>0
         print('./figs/tws_nbp_pdfs','-dpdf')
     end
 
+    
 
 end
 
 
-
-if gg(3)>0
-    
-    %compute linear models for TWS~NBP, pixel-by-pixel
-    % *** not fitting an intercept
-    if 1==2
-    m_tws_nbp = zeros(nl,11);
-    r_tws_nbp = zeros(nl,11);
-    for i = 1:nl
-        t = tws_ann_dt(i,:);
-        n = nbp_ann_dt(i,:);
-        for j = 1:11
-            ix = (1:nyears)+(j-1)*nyears;
-            G  = t(ix)';
-            d  = n(ix)';
-            m_tws_nbp(i,j)  = G\d;
-            r_tws_nbp(i,j)  = corr(G,d);
-        end
-    end
-    end
-
-    %significant relationship (p<0.05) with abs(R) >=0.28
-    %   [for n=50]
-
-    g       = year+model*nyears;
-    g       = splitapply(@mean,model',findgroups(g)')'; 
-    %tws_var = splitapply(@var,tws_ann',g')';
-    tws_var = var(tws_ann,0,2);
-
-    m_agg = zeros(11,1);
-    r_agg = zeros(11,1);
-
-    xvm = -0.5:0.2:1.5
-    nxm = length(xvm)-1;
-    mdens = zeros(nxm,11);
-
-    xvr = -1:0.2:1;
-    nxr = length(xvr)-1;
-    rdens = zeros(nxr,11);
-
-    for j = 1:11
-        %    a = landarea.*tws_var(:,j);
-        a = landarea.*tws_var;
-        a = a/sum(a);
-
-
-        for i = 1:nxr
-            ix = r_tws_nbp(:,j)>xvr(i)&r_tws_nbp(:,j)<=xvr(i+1);
-            rdens(i,j) = sum(a(ix));
-        end
-
-
-        for i = 1:nxm
-            ix = m_tws_nbp(:,j)>xvm(i)&m_tws_nbp(:,j)<=xvm(i+1);
-            mdens(i,j) = sum(a(ix));
-        end
-        
-        m_agg(j) = a'*m_tws_nbp(:,j);
-        r_agg(j) = a'*r_tws_nbp(:,j);
-
-    end
-    x = 0.5*(xvm(2:end)+xvm(1:end-1));
-    subplot(2,2,1)
-    plot(x,mdens)
-    xlabel('Slope: NBP~TWS gC/kgH2O')
-    ylabel({'Density';'weighted by var(TWS)'})
-
-    subplot(2,2,2)
-    bar(m_agg)
-    xlabel('Ensemble member')
-    ylabel({'Average slope: TWS~NBP';'weighted by var(TWS)'})
-
-    x = 0.5*(xvr(2:end)+xvr(1:end-1));
-    subplot(2,2,3)
-    plot(x,rdens)
-    xlabel('R: NBP~TWS')
-    ylabel({'Density';'weighted by var(TWS)'})
-    
-    subplot(2,2,4)
-    bar(r_agg)
-    xlabel('Ensemble member')
-    ylabel({'Average R: TWS~NBP';'weighted by var(TWS)'})
-
-end
 
 
 
@@ -316,7 +233,7 @@ if gg(2)==1
     xlabel('Global annual TWS anomaly (TtH2O)')
     ylabel('Global annual NBP anomaly (PgC/yr)')
 
-    printme = 0;
+    printme = 1;
     if printme
         xdk = gcf;
         xdk.Units = 'inches';
