@@ -7,15 +7,15 @@ fstr1  = '.clm2.h0.';
 fstr2  = '.185001-201412.nc';
 
 
-the_var = 'NBP';
+the_var = 'GPP';
 f = [dir,exp,proc,exp,fstr1,the_var,fstr2];
-nbp = getmonthly(the_var,f,[],[],[],[]);
-nbpstd = std(nbp,0,2);
-subset = nbpstd>0&~isnan(nbpstd);
+gpp = 24*60*60*getmonthly(the_var,f,[],[],[],[]); %gC/m2/d
+
+subset = mean(gpp,2)>0.05;
 lat = lat(subset);
 lon = lon(subset);
 landarea = landarea(subset);
-nbp = nbp(subset,:);
+
 
 assignin('caller','lat',lat)
 assignin('caller','lon',lon)
@@ -68,4 +68,69 @@ end
 assignin('caller',lower(the_var),x)
 end
 
+
+
+    lats    = unique(lat);
+    dlat    = min(lats(2:end)-lats(1:end-1));
+    latfull = lats;
+    go = 1;
+    i  = 1;
+    j  = 2;
+    prev = latfull(1);
+    while go
+        i = i+1;
+        if (lats(j)-prev)<1.05*dlat
+            latfull(i) = lats(j);
+            prev = lats(j);
+            j = j+1;
+        else
+            latfull(i) = latfull(i-1)+dlat;
+            prev = latfull(i);
+        end
+        if j>length(lats)
+            go = 0;
+        end
+    end
+
+    lons    = unique(lon);
+    dlon    = min(lons(2:end)-lons(1:end-1));
+    lonfull = lons;
+    go = 1;
+    i  = 1;
+    j  = 2;
+    prev = lonfull(1);
+    while go
+        i = i+1;
+        if (lons(j)-prev)<1.05*dlon
+            lonfull(i) = lons(j);
+            prev = lons(j);
+            j = j+1;
+        else
+            lonfull(i) = lonfull(i-1)+dlon;
+            prev = lonfull(i);
+        end
+        if j>length(lons)
+            go = 0;
+        end
+    end
+
+assignin('caller','latfull',latfull)
+assignin('caller','lonfull',lonfull)
+
+
+    ccc = [103,0,31;...
+           178,24,43;...
+           214,96,77;...
+           244,165,130;...
+           253,219,199;...
+           247,247,247;...
+           209,229,240;...
+           146,197,222;...
+           67,147,195;...
+           33,102,172;...
+           5,48,97];
+
+assignin('caller','ccc',ccc/256)
+
 end
+

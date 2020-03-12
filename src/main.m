@@ -20,15 +20,239 @@ extrazero(1:9) = {'0'};
 ylist = unique(year);
 
 
+
+
+
 if ~exist('tws_ann','var')
+
+    %compute NBP(sum) and TWS(mean) annual values
     g = year+model*nyears;
     tws_ann = splitapply(@sum,(repmat(eomday(2001,1:12),nl,50*11).*tws)',findgroups(g)')'/365;
     nbp_ann = 24*60*60*splitapply(@sum,(repmat(eomday(2001,1:12),nl,50*11).*nbp)', ...
                findgroups(g)')';
+
+    %detrend NBP and TWS annual values
+    G = [ones(nyears,1),(1:nyears)'];
+    tws_ann_dt = nan*tws_ann;
+    nbp_ann_dt = nan*tws_ann;
+    for i = 1:nl
+        t = tws_ann(i,:);
+        n = nbp_ann(i,:);
+        for j = 1:11
+            ix = (1:nyears)+(j-1)*nyears;
+            
+            d = t(ix)';
+            m = G\d;
+            tws_ann_dt(i,ix) = d-G*m;
+            
+            d = n(ix)';
+            m = G\d;
+            nbp_ann_dt(i,ix) = d-G*m;
+        end
+    end
+
+
 end
 
 gg = zeros(500,1);
-gg(1:5) = [0,1,1,1,1];
+gg(1:5) = [0,0,0,0,1];
+
+
+if gg(5)>0
+
+
+    tws_vals = zeros(1,550);
+    nbp_vals = zeros(1,550);
+    for i = 1:11
+        ix = (1:50)+50*(i-1);
+        x = landarea'*tws_ann(:,ix)/1e9;
+        lm = fitlm(1:50,x);
+        tws_vals(1,ix) = lm.Residuals.raw;
+        y = landarea'*nbp_ann(:,ix)/1e9;
+        lm = fitlm(1:50,y);
+        nbp_vals(1,ix) = lm.Residuals.raw;
+    end
+
+
+    subplot(1,1,1)
+    hold off
+    plot(tws_vals,nbp_vals,'.','Color',[0.7,0.7,0.7])
+
+    lm1 = fitlm(tws_vals,nbp_vals)
+    c = lm1.Coefficients.Estimate;
+    x = [min(tws_vals),max(tws_vals)];
+    hold on
+    plot(x,c(1)+c(2)*x,'LineWidth',1.5)
+    xlabel('Global annual TWS anomaly (TtH2O)')
+    ylabel('Global annual NBP anomaly (PgC/yr)')
+
+    xlim([-3.5,3.5])
+    ylim([-3.5,3.5])
+
+    text(0.1,-2.5,['R= ',num2str(round(corr(tws_vals',nbp_vals'),2))],...
+         'FontWeight','bold')
+    text(0.1,-2.9,['slope= ',num2str(round(c(2),2)),' gC/yr/kgH2O'],...
+         'FontWeight','bold')
+    grid on
+    title('50 years x 11 ensemble members')
+
+    printme = 1;
+    if printme 
+        xdk = gcf;
+        xdk.Units = 'inches';
+        xdk.PaperSize = [5,4];
+        xdk.PaperPosition = [0,0,xdk.PaperSize];
+        print('./figs/tws_nbp_pooled','-dpdf')
+    end
+
+
+
+end
+
+
+if gg(4)>0
+
+    %what R-value corresponds to p=0.05 for n=50?
+    %     abs(R)>=0.28
+    if 1==2
+    m_tws_nbp = nan(nl,11);
+    r_tws_nbp = zeros(nl,11);
+    for i = 1:nl
+        t = tws_ann_dt(i,:);
+        n = nbp_ann_dt(i,:);
+        for j = 1:11
+            ix = (1:nyears)+(j-1)*nyears;
+            G  = t(ix)';
+            d  = n(ix)';
+            r  = corr(G,d);
+            if r>=0.28
+                m_tws_nbp(i,j) = G\d;
+            end
+            r_tws_nbp(i,j) = r;
+        end
+    end
+    end
+
+    g       = year+model*nyears;
+    g       = splitapply(@mean,model',findgroups(g)')'; 
+    tws_var = splitapply(@var,tws_ann',g')';
+
+    xv = -0.375:0.25:2.375;
+    nx = length(xv)-1;
+    out = zeros(nx,1);
+    m_agg = zeros(11,1);
+    for j = 1:11
+    lx = ~isnan(m_tws_nbp(:,j));
+    a = landarea(lx).*tws_var(lx,j);
+    a = a/sum(a);
+    for i = 1:nx
+        ix       = m_tws_nbp(lx,j)>xv(i)&m_tws_nbp(lx,j)<=xv(i+1);
+        out(i,j) = sum(a(ix));
+    end
+
+    m_agg(j) = a'*m_tws_nbp(lx,j);
+
+    end
+
+
+    subplot(1,1,1)
+    out = regrid(lat,lon,abs(nanmean(r_tws_nbp,2)),latfull,lonfull);
+    aa  = imagesc(lonfull,latfull,out,[0.28,1]);
+    set(aa,'AlphaData',~isnan(out)&out>=0.28)
+    set(gca,'YDir','Normal')
+    xlim([-180,180])
+    colormap(gca,flipud(ccc(1:5,:)))
+    colorbar
+
+
+
+end
+
+
+
+if gg(3)>0
+    
+    %compute linear models for TWS~NBP, pixel-by-pixel
+    % *** not fitting an intercept
+    if 1==2
+    m_tws_nbp = zeros(nl,11);
+    r_tws_nbp = zeros(nl,11);
+    for i = 1:nl
+        t = tws_ann_dt(i,:);
+        n = nbp_ann_dt(i,:);
+        for j = 1:11
+            ix = (1:nyears)+(j-1)*nyears;
+            G  = t(ix)';
+            d  = n(ix)';
+            m_tws_nbp(i,j)  = G\d;
+            r_tws_nbp(i,j)  = corr(G,d);
+        end
+    end
+    end
+
+    %significant relationship (p<0.05) with abs(R) >=0.28
+    %   [for n=50]
+
+    g       = year+model*nyears;
+    g       = splitapply(@mean,model',findgroups(g)')'; 
+    %tws_var = splitapply(@var,tws_ann',g')';
+    tws_var = var(tws_ann,0,2);
+
+    m_agg = zeros(11,1);
+    r_agg = zeros(11,1);
+
+    xvm = -0.5:0.2:1.5
+    nxm = length(xvm)-1;
+    mdens = zeros(nxm,11);
+
+    xvr = -1:0.2:1;
+    nxr = length(xvr)-1;
+    rdens = zeros(nxr,11);
+
+    for j = 1:11
+        %    a = landarea.*tws_var(:,j);
+        a = landarea.*tws_var;
+        a = a/sum(a);
+
+
+        for i = 1:nxr
+            ix = r_tws_nbp(:,j)>xvr(i)&r_tws_nbp(:,j)<=xvr(i+1);
+            rdens(i,j) = sum(a(ix));
+        end
+
+
+        for i = 1:nxm
+            ix = m_tws_nbp(:,j)>xvm(i)&m_tws_nbp(:,j)<=xvm(i+1);
+            mdens(i,j) = sum(a(ix));
+        end
+        
+        m_agg(j) = a'*m_tws_nbp(:,j);
+        r_agg(j) = a'*r_tws_nbp(:,j);
+
+    end
+    x = 0.5*(xvm(2:end)+xvm(1:end-1));
+    subplot(2,2,1)
+    plot(x,mdens)
+    xlabel('Slope: NBP~TWS gC/kgH2O')
+    ylabel({'Density';'weighted by var(TWS)'})
+
+    subplot(2,2,2)
+    bar(m_agg)
+    xlabel('Ensemble member')
+    ylabel({'Average slope: TWS~NBP';'weighted by var(TWS)'})
+
+    x = 0.5*(xvr(2:end)+xvr(1:end-1));
+    subplot(2,2,3)
+    plot(x,rdens)
+    xlabel('R: NBP~TWS')
+    ylabel({'Density';'weighted by var(TWS)'})
+    
+    subplot(2,2,4)
+    bar(r_agg)
+    xlabel('Ensemble member')
+    ylabel({'Average R: TWS~NBP';'weighted by var(TWS)'})
+
+end
 
 
 
@@ -77,7 +301,7 @@ if gg(2)==1
     xlabel('Global annual TWS anomaly (TtH2O)')
     ylabel('Global annual NBP anomaly (PgC/yr)')
 
-    printme = 1;
+    printme = 0;
     if printme
         xdk = gcf;
         xdk.Units = 'inches';
