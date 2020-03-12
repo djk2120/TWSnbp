@@ -55,7 +55,7 @@ if ~exist('tws_ann','var')
 end
 
 gg = zeros(500,1);
-gg(1:5) = [0,0,0,0,1];
+gg(1:5) = [0,0,0,1,0];
 
 
 if gg(5)>0
@@ -96,7 +96,7 @@ if gg(5)>0
     grid on
     title('50 years x 11 ensemble members')
 
-    printme = 1;
+    printme = 0;
     if printme 
         xdk = gcf;
         xdk.Units = 'inches';
@@ -114,7 +114,7 @@ if gg(4)>0
 
     %what R-value corresponds to p=0.05 for n=50?
     %     abs(R)>=0.28
-    if 1==2
+    if ~exist('m_tws_nbp','var')
     m_tws_nbp = nan(nl,11);
     r_tws_nbp = zeros(nl,11);
     for i = 1:nl
@@ -137,33 +137,48 @@ if gg(4)>0
     g       = splitapply(@mean,model',findgroups(g)')'; 
     tws_var = splitapply(@var,tws_ann',g')';
 
-    xv = -0.375:0.25:2.375;
+    xv = -0.5:0.2:2.1;
     nx = length(xv)-1;
     out = zeros(nx,1);
     m_agg = zeros(11,1);
     for j = 1:11
-    lx = ~isnan(m_tws_nbp(:,j));
-    a = landarea(lx).*tws_var(lx,j);
-    a = a/sum(a);
-    for i = 1:nx
-        ix       = m_tws_nbp(lx,j)>xv(i)&m_tws_nbp(lx,j)<=xv(i+1);
-        out(i,j) = sum(a(ix));
+        lx = ~isnan(m_tws_nbp(:,j));
+        a = landarea(lx).*tws_var(lx,j);
+        a = a/sum(a);
+        for i = 1:nx
+            ix       = m_tws_nbp(lx,j)>xv(i)&m_tws_nbp(lx,j)<=xv(i+1);
+            out(i,j) = sum(a(ix));
+        end
+        m_agg(j) = a'*m_tws_nbp(lx,j);
     end
+    
+    x = 0.5*(xv(2:end)+xv(1:end-1));
+    avgslope = mean(m_agg);
+    subplot(2,1,1)
+    plot(x,out,'Color',[0.7,0.7,0.7])
+    xlim([-0.5,2])
+    set(gca,'Layer','top')
+    xlabel('Slope (gC/yr/kgH2O)')
+    ylabel({'Density';'weighted by var(TWS)'})
+    legend('e001','e002','...','e011')
+    subplot(2,1,2)
+    hold off
+    plot([-1,20],[avgslope,avgslope],'k:','LineWidth',1.5)
+    hold on
+    bar(m_agg,'FaceColor',[0.6,0.6,0.6],'FaceAlpha',0.8)
+    xlim([0,12])
+    set(gca,'xtick',1:11)
+    xlabel('Ensemble member')
+    ylabel({'Slope';'(derived from pdf)'})
 
-    m_agg(j) = a'*m_tws_nbp(lx,j);
-
+    printme = 1;
+    if printme 
+        xdk = gcf;
+        xdk.Units = 'inches';
+        xdk.PaperSize = [5,4];
+        xdk.PaperPosition = [0,0,xdk.PaperSize];
+        print('./figs/tws_nbp_pdfs','-dpdf')
     end
-
-
-    subplot(1,1,1)
-    out = regrid(lat,lon,abs(nanmean(r_tws_nbp,2)),latfull,lonfull);
-    aa  = imagesc(lonfull,latfull,out,[0.28,1]);
-    set(aa,'AlphaData',~isnan(out)&out>=0.28)
-    set(gca,'YDir','Normal')
-    xlim([-180,180])
-    colormap(gca,flipud(ccc(1:5,:)))
-    colorbar
-
 
 
 end
