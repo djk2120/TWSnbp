@@ -76,11 +76,12 @@ if gg(6)>0
     y = a'*nbp_ann_dt;
 
     ix = x>-11&x<-9;
+    xx = x(ix);
     yy = y(ix);
     y1 = max(yy);
     [~,ix1] = min(abs(y-y1));
     e1 = 1+floor(ix1/50.001);
-    y2 = yy(2);
+    y2 = yy(6);
     [~,ix2] = min(abs(y-y2));
     e2 = 1+floor(ix2/50.001);
 
