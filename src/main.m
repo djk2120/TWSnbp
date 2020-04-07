@@ -106,7 +106,7 @@ if gg(6)>0
     altg2   = regrid(lat,lon,altg2,latfull,lonfull); %MtC
 
 
-    subplot('Position',[0.04,0.1,0.28,0.8])
+    subplot('Position',[0.04,0.57,0.42,0.38])
     aa = imagesc(lonfull,latfull,out2,[-500,500]);
     set(aa,'AlphaData',~isnan(out1))
     set(gca,'YDir','Normal')
@@ -118,7 +118,7 @@ if gg(6)>0
     set(gca,'xtick',-180:60:180)
     set(gca,'ytick',-60:30:90)
 
-    subplot('Position',[0.37,0.1,0.28,0.8])
+    subplot('Position',[0.54,0.57,0.42,0.38])
     aa = imagesc(lonfull,latfull,m2,[-3,3]);
     set(aa,'AlphaData',~isnan(m2))
     set(gca,'YDir','Normal')
@@ -128,10 +128,10 @@ if gg(6)>0
     ylim([-60,75])
     set(gca,'xtick',-180:60:180)
     set(gca,'ytick',-60:30:90)
-    title(' ---> ')
 
 
-    subplot('Position',[0.7,0.1,0.28,0.8])
+
+    subplot('Position',[0.54,0.08,0.42,0.38])
     aa = imagesc(lonfull,latfull,altg2,[-val,val]);
     set(aa,'AlphaData',~isnan(altg2))
     set(gca,'YDir','Normal')
@@ -145,8 +145,8 @@ if gg(6)>0
 
     xdk = gcf;
     xdk.Units = 'inches';
-    xdk.PaperSize= [13,2];
-    xdk.PaperPosition = [0,0,13,2];
+    xdk.PaperSize= [8,4];
+    xdk.PaperPosition = [0,0,8,4];
     print('figs/example_anomaly1','-dpdf')
 
 
