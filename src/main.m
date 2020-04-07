@@ -40,22 +40,117 @@ if ~exist('tws_ann','var')
         n = nbp_ann(i,:);
         for j = 1:11
             ix = (1:nyears)+(j-1)*nyears;
-            
             d = t(ix)';
             m = G\d;
             tws_ann_dt(i,ix) = d-G*m;
-            
             d = n(ix)';
             m = G\d;
             nbp_ann_dt(i,ix) = d-G*m;
         end
     end
 
+    %compute slope, pixel-by-pixel, for each ENS
+    nx = 11;
+    tws_nbp_slopes = zeros(nl,nx);
+    for ee = 1:nx
+    for i = 1:nl
+        G = tws_ann_dt(i,(1:50)+(ee-1)*50)';
+        d = nbp_ann_dt(i,(1:50)+(ee-1)*50)';
+        tws_nbp_slopes(i,ee) = G\d;
+    end
+    end
+
+
 
 end
 
 gg = zeros(500,1);
-gg(1:5) = [0,1,0,0,0];
+gg(1:5)  = [0,0,0,0,0];
+gg(6:10) = 1;
+
+
+if gg(6)>0
+
+    a = landarea/sum(landarea);
+    x = a'*tws_ann_dt;
+    y = a'*nbp_ann_dt;
+
+    ix = x>-11&x<-9;
+    yy = y(ix);
+    y1 = max(yy);
+    [~,ix1] = min(abs(y-y1));
+    e1 = 1+floor(ix1/50.001);
+    y2 = yy(2);
+    [~,ix2] = min(abs(y-y2));
+    e2 = 1+floor(ix2/50.001);
+
+
+
+
+    out1 = regrid(lat,lon,tws_ann_dt(:,ix1),latfull,lonfull);
+    out2 = regrid(lat,lon,tws_ann_dt(:,ix2),latfull,lonfull);
+    m1   = regrid(lat,lon,tws_nbp_slopes(:,e1),latfull,lonfull);
+    m2   = regrid(lat,lon,tws_nbp_slopes(:,e2),latfull,lonfull);
+    g1   = tws_ann_dt(:,ix1).*tws_nbp_slopes(:,e1).*landarea/10^6;
+    altg1 = nbp_ann_dt(:,ix1).*landarea/10^6;
+    g2   = tws_ann_dt(:,ix2).*tws_nbp_slopes(:,e2).*landarea/10^6;
+    altg2 = nbp_ann_dt(:,ix2).*landarea/10^6;
+
+    %sum(abs(altg1(abs(altg1)<4)))/sum(abs(altg1))
+    val = 5;
+    sum(abs(altg2(abs(altg2)<val)))/sum(abs(altg2))
+
+    g1   = regrid(lat,lon,g1,latfull,lonfull); %MtC
+    altg1   = regrid(lat,lon,altg1,latfull,lonfull); %MtC
+    g2   = regrid(lat,lon,g2,latfull,lonfull); %MtC
+    altg2   = regrid(lat,lon,altg2,latfull,lonfull); %MtC
+
+
+    subplot('Position',[0.04,0.1,0.28,0.8])
+    aa = imagesc(lonfull,latfull,out2,[-500,500]);
+    set(aa,'AlphaData',~isnan(out1))
+    set(gca,'YDir','Normal')
+    colormap(gca,ccc2)
+    c = colorbar;
+    ylabel(c,'TWS anomaly (mm)')
+    title([num2str(round(x(ix2),1)),' TtH2O'])
+    ylim([-60,75])
+    set(gca,'xtick',-180:60:180)
+    set(gca,'ytick',-60:30:90)
+
+    subplot('Position',[0.37,0.1,0.28,0.8])
+    aa = imagesc(lonfull,latfull,m2,[-3,3]);
+    set(aa,'AlphaData',~isnan(m2))
+    set(gca,'YDir','Normal')
+    colormap(gca,ccc2)
+    c = colorbar;
+    ylabel(c,'NBP sensitivity (gC/kgH2O)')
+    ylim([-60,75])
+    set(gca,'xtick',-180:60:180)
+    set(gca,'ytick',-60:30:90)
+    title(' ---> ')
+
+
+    subplot('Position',[0.7,0.1,0.28,0.8])
+    aa = imagesc(lonfull,latfull,altg2,[-val,val]);
+    set(aa,'AlphaData',~isnan(altg2))
+    set(gca,'YDir','Normal')
+    colormap(gca,ccc2)
+    c = colorbar;
+    ylabel(c,'NBP anomaly (gC/m2)')
+    ylim([-60,75])
+    set(gca,'xtick',-180:60:180)
+    set(gca,'ytick',-60:30:90)
+    title([num2str(round(y(ix2),1)),' GtC'])
+
+    xdk = gcf;
+    xdk.Units = 'inches';
+    xdk.PaperSize= [13,2];
+    xdk.PaperPosition = [0,0,13,2];
+    print('figs/example_anomaly1','-dpdf')
+
+
+end
 
 
 if gg(5)>0
