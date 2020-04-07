@@ -65,9 +65,8 @@ if ~exist('tws_ann','var')
 end
 
 gg = zeros(500,1);
-gg(1:5)  = [0,0,0,0,0];
-gg(6:10) = 1;
-
+gg(1:5)  = [0,1,0,0,0];
+gg(6:10) = [0,1,1,1,1];
 
 if gg(6)>0
 
@@ -79,8 +78,8 @@ if gg(6)>0
     xx = x(ix);
     yy = y(ix);
     y2 = max(yy);
-    [~,ix2] = min(abs(y-y1));
-    e2 = 1+floor(ix1/50.001);
+    [~,ix2] = min(abs(y-y2));
+    e2 = 1+floor(ix2/50.001);
     %y2 = yy(6);
     %[~,ix2] = min(abs(y-y2));
     %e2 = 1+floor(ix2/50.001);
@@ -101,7 +100,7 @@ if gg(6)>0
 
     subplot('Position',[0.04,0.57,0.42,0.38])
     aa = imagesc(lonfull,latfull,out2,[-500,500]);
-    set(aa,'AlphaData',~isnan(out1))
+    set(aa,'AlphaData',~isnan(out2))
     set(gca,'YDir','Normal')
     colormap(gca,ccc2)
     c = colorbar;
@@ -138,7 +137,7 @@ if gg(6)>0
     xdk.Units = 'inches';
     xdk.PaperSize= [8,4];
     xdk.PaperPosition = [0,0,8,4];
-    print('figs/example_anomaly2','-dpdf')
+    %print('figs/example_anomaly2','-dpdf')
 
 
 end
