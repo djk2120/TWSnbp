@@ -73,7 +73,7 @@ end
 
 gg = zeros(500,1);
 gg(1:5)  = [0,0,0,0,0];
-gg(6:10) = [1,0,0,0,1];
+gg(6:10) = [0,1,0,0,1];
 
 if gg(9)>0
     Rthresh = 0.514;
@@ -126,7 +126,9 @@ if gg(7)>0
 
     x  = landarea'*tws_ann_dt(:,ix)/1e9;
     y  = landarea'*nbp_ann_dt(:,ix)/1e9;
-    
+
+    ix = y==y2|y==y3;
+
     subplot(1,1,1)
     hold off
     plot(x,y,'.')
@@ -137,19 +139,22 @@ if gg(7)>0
     xlim([-3.5,3.5])
     hold on
     plot([-3.5,3.5],c(1)+c(2)*[-3,3],'LineWidth',1.5);
+
     text(-3,3,['R= ',num2str(round(corr(x',y'),2))])
     text(-3,2.65,['m= ',num2str(round(c(2),2))])
     ax = gca;
     ax.Position = [0.1300 0.1100 0.8 0.8];
     xlabel('TWS anomaly (TtH2O)')
     ylabel('NBP anomaly (GtC)')
+    plot(x(ix),y(ix),'ro','MarkerSize',12,'LineWidth',3)
+
 
     xdk = gcf;
     xdk.Units = 'inches';
     xdk.PaperSize = [4,4];
     xdk.PaperPosition = [0,0,4,4];
     
-    print('figs/tws_nbp_pooled','-dpdf')
+    print('figs/tws_nbp_pooled2','-dpdf')
 
 
 end
@@ -166,6 +171,7 @@ if gg(6)>0
     yy = y(ix);
     %y2 = max(yy);
     y2 = yy(4);
+    y3 = max(yy);
     [~,ix2] = min(abs(y-y2));
     e2 = 1+floor(ix2/50.001);
 
@@ -225,56 +231,6 @@ if gg(6)>0
 end
 
 
-if gg(5)>0
-
-
-    tws_vals = zeros(1,550);
-    nbp_vals = zeros(1,550);
-    for i = 1:11
-        ix = (1:50)+50*(i-1);
-        x = landarea'*tws_ann(:,ix)/1e9;
-        lm = fitlm(1:50,x);
-        tws_vals(1,ix) = lm.Residuals.raw;
-        y = landarea'*nbp_ann(:,ix)/1e9;
-        lm = fitlm(1:50,y);
-        nbp_vals(1,ix) = lm.Residuals.raw;
-    end
-
-
-    subplot(1,1,1)
-    hold off
-    plot(tws_vals,nbp_vals,'.','Color',[0.7,0.7,0.7])
-
-    lm1 = fitlm(tws_vals,nbp_vals)
-    c = lm1.Coefficients.Estimate;
-    x = [min(tws_vals),max(tws_vals)];
-    hold on
-    plot(x,c(1)+c(2)*x,'LineWidth',1.5)
-    xlabel('Global annual TWS anomaly (TtH2O)')
-    ylabel('Global annual NBP anomaly (PgC/yr)')
-
-    xlim([-3.5,3.5])
-    ylim([-3.5,3.5])
-
-    text(0.1,-2.5,['R= ',num2str(round(corr(tws_vals',nbp_vals'),2))],...
-         'FontWeight','bold')
-    text(0.1,-2.9,['slope= ',num2str(round(c(2),2)),' gC/yr/kgH2O'],...
-         'FontWeight','bold')
-    grid on
-    title('50 years x 11 ensemble members')
-
-    printme = 0;
-    if printme 
-        xdk = gcf;
-        xdk.Units = 'inches';
-        xdk.PaperSize = [5,4];
-        xdk.PaperPosition = [0,0,xdk.PaperSize];
-        print('./figs/tws_nbp_pooled','-dpdf')
-    end
-
-
-
-end
 
 
 if gg(4)>0
