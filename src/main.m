@@ -127,7 +127,7 @@ if gg(7)>0
     x  = landarea'*tws_ann_dt(:,ix)/1e9;
     y  = landarea'*nbp_ann_dt(:,ix)/1e9;
 
-    ix = y==y2|y==y3;
+    ix = y==y3;
 
     subplot(1,1,1)
     hold off
