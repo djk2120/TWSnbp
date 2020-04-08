@@ -51,12 +51,19 @@ if ~exist('tws_ann','var')
 
     %compute slope, pixel-by-pixel, for each ENS
     nx = 11;
+    ix0 = year(month==1)>1999;
+    ny  = sum(ix0&model(month==1)==1);
     tws_nbp_slopes = zeros(nl,nx);
+    tws_nbp_corrs  = zeros(nl,nx);
     for ee = 1:nx
     for i = 1:nl
-        G = tws_ann_dt(i,(1:50)+(ee-1)*50)';
-        d = nbp_ann_dt(i,(1:50)+(ee-1)*50)';
-        tws_nbp_slopes(i,ee) = G\d;
+        ix = ix0&model(month==1)==ee;
+        x = tws_ann_dt(i,ix)';
+        G = [x];
+        d = nbp_ann_dt(i,ix)';
+        m = G\d;
+        tws_nbp_slopes(i,ee) = m;
+        tws_nbp_corrs(i,ee)  = corr(x,d);
     end
     end
 
@@ -65,8 +72,88 @@ if ~exist('tws_ann','var')
 end
 
 gg = zeros(500,1);
-gg(1:5)  = [0,1,0,0,0];
-gg(6:10) = [0,1,1,1,1];
+gg(1:5)  = [0,0,0,0,0];
+gg(6:10) = [0,0,0,1,1];
+
+if gg(9)>0
+    Rthresh = 0.514;
+    m = zeros(11,1);
+    for i = 1:11
+        lx = tws_nbp_corrs(:,i)>=Rthresh;
+        ix = year(month==1)>1999&model(month==1)==i;
+        wt = var(tws_ann_dt(lx,ix),0,2);
+        wt = wt/sum(wt);
+        m(i) = wt'*tws_nbp_slopes(lx,i);
+    end
+    bar(m)
+    xlabel('Ensemble member')
+    ylabel('Slope NBP~TWS (gC/kgH2O)')
+    ylim([0,1])
+    
+    xdk = gcf;
+    xdk.Units = 'inches';
+    xdk.PaperSize = [4,4];
+    xdk.PaperPosition = [0,0,4,4];
+    print('figs/tws_nbp_slopebars','-dpdf')
+
+end
+
+
+
+if gg(8)>0
+
+    %corr vs. p-value, 15 points
+    x = (1:15)';
+    for i = 1:500
+    y = 0.05*x+rand(15,1);
+    c(i) = corr(x,y);
+    lm = fitlm(x,y);
+    p(i) = lm.Coefficients.pValue(2);
+    end
+
+    hold off
+    plot(p,c,'.')
+    xlim([0,0.2])
+    
+    [a,b] = min(abs(p-0.05))
+    % R = 0.514
+
+end
+
+
+if gg(7)>0
+    ix = year(month==1)>1999;
+
+    x  = landarea'*tws_ann_dt(:,ix)/1e9;
+    y  = landarea'*nbp_ann_dt(:,ix)/1e9;
+    
+    subplot(1,1,1)
+    hold off
+    plot(x,y,'.')
+    lm = fitlm(x,y,'Intercept',false);
+    c  = lm.Coefficients.Estimate;
+    c  = [0,c];
+    ylim([-3.5,3.5])
+    xlim([-3.5,3.5])
+    hold on
+    plot([-3.5,3.5],c(1)+c(2)*[-3,3],'LineWidth',1.5);
+    text(-3,3,['R= ',num2str(round(corr(x',y'),2))])
+    text(-3,2.65,['m= ',num2str(round(c(2),2))])
+    ax = gca;
+    ax.Position = [0.1300 0.1100 0.8 0.8];
+    xlabel('TWS anomaly (TtH2O)')
+    ylabel('NBP anomaly (GtC)')
+
+    xdk = gcf;
+    xdk.Units = 'inches';
+    xdk.PaperSize = [4,4];
+    xdk.PaperPosition = [0,0,4,4];
+    
+    print('figs/tws_nbp_pooled','-dpdf')
+
+
+end
+
 
 if gg(6)>0
 
