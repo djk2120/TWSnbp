@@ -73,7 +73,7 @@ end
 
 gg = zeros(500,1);
 gg(1:5)  = [0,0,0,0,0];
-gg(6:10) = [0,0,0,1,1];
+gg(6:10) = [1,0,0,0,1];
 
 if gg(9)>0
     Rthresh = 0.514;
@@ -157,19 +157,17 @@ end
 
 if gg(6)>0
 
-    a = landarea/sum(landarea);
-    x = a'*tws_ann_dt;
-    y = a'*nbp_ann_dt;
 
-    ix = x>-11&x<-9;
+    x = landarea'*tws_ann_dt/1e9;
+    y = landarea'*nbp_ann_dt/1e9;
+
+    ix = x>-1.1&x<-0.9;
     xx = x(ix);
     yy = y(ix);
-    y2 = max(yy);
+    %y2 = max(yy);
+    y2 = yy(4);
     [~,ix2] = min(abs(y-y2));
     e2 = 1+floor(ix2/50.001);
-    %y2 = yy(6);
-    %[~,ix2] = min(abs(y-y2));
-    %e2 = 1+floor(ix2/50.001);
 
 
     out2 = regrid(lat,lon,tws_ann_dt(:,ix2),latfull,lonfull);
@@ -179,9 +177,6 @@ if gg(6)>0
 
     val = 5;
     sum(abs(altg2(abs(altg2)<val)))/sum(abs(altg2))
-
-
-
     altg2   = regrid(lat,lon,altg2,latfull,lonfull); %MtC
 
 
@@ -192,7 +187,7 @@ if gg(6)>0
     colormap(gca,ccc2)
     c = colorbar;
     ylabel(c,'TWS anomaly (mm)')
-    title([num2str(round(x(ix2),1)),' TtH2O'])
+    title([num2str(round(x(ix2),2)),' TtH2O'])
     ylim([-60,75])
     set(gca,'xtick',-180:60:180)
     set(gca,'ytick',-60:30:90)
@@ -218,13 +213,13 @@ if gg(6)>0
     ylim([-60,75])
     set(gca,'xtick',-180:60:180)
     set(gca,'ytick',-60:30:90)
-    title(['+',num2str(round(y(ix2),1)),' GtC'])
+    title([num2str(round(y(ix2),2)),' GtC'])
 
     xdk = gcf;
     xdk.Units = 'inches';
     xdk.PaperSize= [8,4];
     xdk.PaperPosition = [0,0,8,4];
-    %print('figs/example_anomaly2','-dpdf')
+    print('figs/example_anomaly1','-dpdf')
 
 
 end
