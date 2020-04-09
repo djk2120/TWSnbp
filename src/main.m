@@ -73,7 +73,7 @@ end
 
 gg = zeros(500,1);
 gg(1:5)  = [0,0,0,0,0];
-gg(6:10) = [0,1,0,0,1];
+gg(6:10) = [0,0,0,1,1];
 
 if gg(9)>0
     Rthresh = 0.514;
@@ -85,15 +85,31 @@ if gg(9)>0
         wt = wt/sum(wt);
         m(i) = wt'*tws_nbp_slopes(lx,i);
     end
+
+    subplot(1,2,2)
     bar(m)
     xlabel('Ensemble member')
     ylabel('Slope NBP~TWS (gC/kgH2O)')
     ylim([0,1])
     
+    for i = 1:11
+        ix = model(month==1)==i&year(month==1)>1999;
+        G  = (landarea'*tws_ann_dt(:,ix)/1e9)';
+        d  = (landarea'*nbp_ann_dt(:,ix)/1e9)';
+        m(i) = G\d;
+    end
+
+    subplot(1,2,1)
+    bar(m)
+    xlabel('Ensemble member')
+    ylabel('Slope NBP~TWS (gC/kgH2O)')
+    ylim([0,1])
+
+
     xdk = gcf;
     xdk.Units = 'inches';
-    xdk.PaperSize = [4,4];
-    xdk.PaperPosition = [0,0,4,4];
+    xdk.PaperSize = [8,3];
+    xdk.PaperPosition = [0,0,8,3];
     print('figs/tws_nbp_slopebars','-dpdf')
 
 end
@@ -169,11 +185,13 @@ if gg(6)>0
     ix = x>-1.1&x<-0.9;
     xx = x(ix);
     yy = y(ix);
-    %y2 = max(yy);
-    y2 = yy(4);
-    y3 = max(yy);
+    y2 = max(yy);
+    %y2 = yy(4);
+    %y3 = max(yy);
     [~,ix2] = min(abs(y-y2));
     e2 = 1+floor(ix2/50.001);
+    yr = year(month==1);
+    yr(ix2)
 
 
     out2 = regrid(lat,lon,tws_ann_dt(:,ix2),latfull,lonfull);
@@ -225,7 +243,7 @@ if gg(6)>0
     xdk.Units = 'inches';
     xdk.PaperSize= [8,4];
     xdk.PaperPosition = [0,0,8,4];
-    print('figs/example_anomaly1','-dpdf')
+    %print('figs/example_anomaly1','-dpdf')
 
 
 end
