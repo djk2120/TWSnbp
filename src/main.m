@@ -69,8 +69,109 @@ if ~exist('tws_ann','var')
 end
 
 gg = zeros(500,1);
-gg(1:5)  = [0,0,0,0,0];
-gg(6:10) = [0,0,0,0,1];
+gg(1:5)   = [0,0,0,0,0];
+gg(6:10)  = [0,0,0,0,0];
+gg(11:15) = [0,1,1,1,1];
+
+
+if gg(12)>0
+
+    yy = 1999;
+    ix = year(month==1)>yy;
+    twsvar = splitapply(@var,tws_ann_dt(:,ix)',model(year>yy&month==1)')';
+
+    Rthresh = 0.514;
+    p05 = tws_nbp_corrs>Rthresh;
+    
+    xv = -0.5:0.2:3;
+    nx = length(xv)-1;
+    out = zeros(11,nx);
+    for i= 1:11
+        a = landarea;
+        a(~p05(:,i)) = 0;
+        a = a/sum(a);
+        bars(i) = a'*tws_nbp_slopes(:,i);
+        for j= 1:nx
+            ix = tws_nbp_slopes(:,i)>=xv(j)&tws_nbp_slopes(:,i)<xv(j+1);
+            out(i,j) = sum(a(ix));
+        end
+    end
+    
+    subplot(1,2,1)
+    xv2 = 0.5*(xv(2:end)+xv(1:end-1));
+    plot(xv2,out,'Color',[0.7,0.7,0.7])
+    legend('e001','e002','...')
+    xlabel('Slope: NBP~TWS (gC/kgH2O)')
+    ylabel('Density')
+    title('landarea weighting')
+    subplot(1,2,2)
+    bar(bars)
+    ylim([0,1])
+    xlabel('Ensemble member')
+    ylabel('Slope: NBP~TWS (gC/kgH2O)')
+    title('Global average')
+
+    printme = 1;
+    if printme
+    xdk = gcf;
+    xdk.Units = 'inches';
+    xdk.PaperSize = [10,4];
+    xdk.PaperPosition = [0,0,xdk.PaperSize];
+    print('figs/slope_pdfs_lndareawts','-dpdf')
+    end
+
+end
+
+
+if gg(11)>0
+
+    yy = 1999;
+    ix = year(month==1)>yy;
+    twsvar = splitapply(@var,tws_ann_dt(:,ix)',model(year>yy&month==1)')';
+
+    Rthresh = 0.514;
+    p05 = tws_nbp_corrs>Rthresh;
+    
+    xv = -0.5:0.2:3;
+    nx = length(xv)-1;
+    out = zeros(11,nx);
+    for i= 1:11
+        a = landarea.*twsvar(:,i);
+        a(~p05(:,i)) = 0;
+        a = a/sum(a);
+        bars(i) = a'*tws_nbp_slopes(:,i);
+        for j= 1:nx
+            ix = tws_nbp_slopes(:,i)>=xv(j)&tws_nbp_slopes(:,i)<xv(j+1);
+            out(i,j) = sum(a(ix));
+        end
+    end
+    
+    subplot(1,2,1)
+    xv2 = 0.5*(xv(2:end)+xv(1:end-1));
+    plot(xv2,out,'Color',[0.7,0.7,0.7])
+    legend('e001','e002','...')
+    xlabel('Slope: NBP~TWS (gC/kgH2O)')
+    ylabel('Density')
+    title('var(TWS) weighting')
+    subplot(1,2,2)
+    bar(bars)
+    ylim([0,1])
+    xlabel('Ensemble member')
+    ylabel('Slope: NBP~TWS (gC/kgH2O)')
+    title('Global average')
+
+    printme = 1;
+    if printme
+    xdk = gcf;
+    xdk.Units = 'inches';
+    xdk.PaperSize = [10,4];
+    xdk.PaperPosition = [0,0,xdk.PaperSize];
+    print('figs/slope_pdfs_twsvarwts','-dpdf')
+    end
+
+end
+
+
 
 if gg(10)>0
 
@@ -106,7 +207,6 @@ if gg(10)>0
     xdk.PaperPosition = [0,0,xdk.PaperSize];
     print('figs/twsvar_maps','-dpdf')
     end
-
 
 end
 
