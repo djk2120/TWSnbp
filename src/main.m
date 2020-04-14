@@ -20,9 +20,6 @@ extrazero(1:9) = {'0'};
 ylist = unique(year);
 
 
-
-
-
 if ~exist('tws_ann','var')
 
     %compute NBP(sum) and TWS(mean) annual values
@@ -73,7 +70,46 @@ end
 
 gg = zeros(500,1);
 gg(1:5)  = [0,0,0,0,0];
-gg(6:10) = [0,0,0,1,1];
+gg(6:10) = [0,0,0,0,1];
+
+if gg(10)>0
+
+    yy = 1999;
+    ix = year(month==1)>yy;
+    twsvar = splitapply(@var,tws_ann_dt(:,ix)',model(year>yy&month==1)')';
+    maxx = 10000;
+    for i = 1:4
+        subplot(2,2,i)
+        out =  regrid(lat,lon,twsvar(:,i),latfull,lonfull);
+        aa = imagesc(lonfull,latfull,out,[0,maxx]);
+        set(aa,'AlphaData',~isnan(out))
+        set(gca,'YDir','Normal')     
+        c = colorbar;
+        ylabel(c,'var(TWS) [mm^2]')
+        ylim([-60,75])
+        title(['e0',num2str(i)])
+        set(gca,'xtick',-180:30:180)
+        set(gca,'ytick',-60:30:90)
+    end
+
+    a = repmat(landarea,1,11);
+    a = a/sum(a(:));
+
+    ix = abs(twsvar)<maxx;
+    sum(a(ix))
+
+    printme = 1;
+    if printme
+    xdk = gcf;
+    xdk.Units = 'inches';
+    xdk.PaperSize = [10,4];
+    xdk.PaperPosition = [0,0,xdk.PaperSize];
+    print('figs/twsvar_maps','-dpdf')
+    end
+
+
+end
+
 
 if gg(9)>0
     Rthresh = 0.514;
@@ -85,6 +121,8 @@ if gg(9)>0
         wt = wt/sum(wt);
         m(i) = wt'*tws_nbp_slopes(lx,i);
     end
+
+    mean(m)
 
     subplot(1,2,2)
     bar(m)
@@ -110,7 +148,7 @@ if gg(9)>0
     xdk.Units = 'inches';
     xdk.PaperSize = [8,3];
     xdk.PaperPosition = [0,0,8,3];
-    print('figs/tws_nbp_slopebars','-dpdf')
+    %print('figs/tws_nbp_slopebars','-dpdf')
 
 end
 
