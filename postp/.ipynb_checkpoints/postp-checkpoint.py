@@ -71,24 +71,16 @@ def makeann(f):
     if 'CESM2' in f:
         tmp=xr.open_dataset('/glade/campaign/cgd/cesm/CESM2-LE/timeseries/lnd/proc/tseries/month_1/H2OSOI/b.e21.BHISTcmip6.f09_g17.LE2-1001.001.clm2.h0.H2OSOI.192001-192912.nc')
         ns=len(tmp.levsoi)
-        dz=xr.DataArray(1000*tmp.DZSOI.sel(lat=30,lon=105,method='nearest')[:ns].values,dims='levsoi',name='Soil thickness',attrs={'units':'mm'})
-    else:
-        tmp=xr.open_dataset('/glade/campaign/cesm/collections/cesmLE/CESM-CAM5-BGC-LE/lnd/proc/tseries/monthly/H2OSOI/b.e11.B20TRC5CNBDRD.f09_g16.001.clm2.h0.H2OSOI.185001-200512.nc')
-        ns=len(tmp.levgrnd)
-        dz=xr.DataArray(1000*tmp.DZSOI.sel(lat=30,lon=105,method='nearest')[:ns].values,dims='levgrnd',name='Soil thickness',attrs={'units':'mm'})
-        
+        dz=xr.DataArray(1000*tmp.DZSOI.sel(lat=30,lon=105,method='nearest')[:ns].values,
+                        dims='levsoi',name='Soil thickness',attrs={'units':'mm'})
+
     
     for f in files:
         dout='/glade/scratch/djk2120/postp/'
-        if 'CESM2' in f:
-            fout=dout+'cesm2.globann.'+f.split('.')[4]+'-'+f.split('.')[5]+'.'+f.split('.')[-2][:4]+'.nc'
-        else:
-            fout=dout+'cesm1.globann.'+f.split('.')[-6]+'.'+f.split('.')[-2][:4]+'.nc'
+        fout=dout+'cesm2.globann.'+f.split('.')[4]+'-'+f.split('.')[5]+'.'+f.split('.')[-2][:4]+'.nc'
+        #fout=dout+'cesm1.globann.'+f.split('.')[-6]+'.'+f.split('.')[-2][:4]+'.nc'
         ds=get_vpd(f,la)
-        dvs=['GPP','HR','AR','NPP','NEP','NBP','COL_FIRE_CLOSS',
-             'SW','SOILWATER_10CM',
-             'FCTR','FGEV','FCEV','QRUNOFF',
-             'RAIN','SNOW','TLAI']
+        dvs=['GPP','HR','AR','NPP','NEP','NBP','SOILWATER_10CM','FCTR','FGEV','FCEV','QRUNOFF','SW']
         for v in dvs:
             if v=='VPD':
                 ds=get_vpd(f,la)

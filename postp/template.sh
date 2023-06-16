@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N CTL2010
+#PBS -N lens2_postp_num
 #PBS -q casper
 #PBS -l walltime=12:00:00
 #PBS -A P93300641
@@ -8,10 +8,9 @@
 #PBS -l select=1:ncpus=1
 
 source ~/.bashrc
-conda activate ppe-py
+conda activate lens-py
 
-f='zqz'
-python postp.py $f
+python postp_mpige.py file
 
 
 
