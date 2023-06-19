@@ -12,18 +12,3 @@ for i in {001..095};do
     qsub $job
 
 done
-
-# while read f; do
-#     ((i++))
-#     printf -v j "%03d" $i
-
-# done <cesm1.list
-
-# for i in {000..099}; do
-#     job="job"$i".job"
-#     sed 's/zqz/'$i'/g' template.sh > $job 
-#     qsub $job
-# done
-
-
-

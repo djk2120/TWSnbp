@@ -9,14 +9,9 @@ def amean(da):
     xa.attrs=da.attrs
     return xa
 
-def gmean(da,la,g=[]):
-    if len(g)==0:
-        g=xr.DataArray(np.tile('global',la.shape),
-                       coords=la.coords,
-                       name='biome').where(la>0)
-    #mean across g groups
-    cf = 1/la.groupby(g).sum()
-    xg = cf*(la*da).groupby(g).sum().compute()
+def gmean(da,la):
+    cf = 1/la.sum()
+    xg = cf*(la*da).sum(dim=['lat','lon']).compute()
     xg.name=da.name
     xg.attrs=da.attrs
     return xg
@@ -56,3 +51,10 @@ def get_vpd(file):
     vp.attrs={'long_name':'2m vapor pressure','units':'kPa'}
 
     return [rh2m,tsa,vpd,vp]
+
+def get_tsatrop(f,la):
+    ds=preprocess(xr.open_dataset(f.replace('NBP','TSA')))
+    ix=abs(ds.lat)<=24
+    da=la.sum()/la.where(ix).sum()*ds['TSA'].where(ix)
+    da.name='TSA_TROP'
+    return da

@@ -10,7 +10,9 @@
 source ~/.bashrc
 conda activate lens-py
 
-python postp_mpige.py file
+
+python postp_cesm2.py file
+#python postp_mpi12.py file
 
 
 
