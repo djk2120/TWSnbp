@@ -22,7 +22,7 @@ x=gmean(amean(da),la).isel(biome=0)
 dsout['NBP']=x
 
 da=xr.open_dataset(f.replace('nbp','mrso')).mrso
-x=gmean(amean(da),la).isel(biome=0)
+x=gmean(amean(da),la)
 dsout['SW']=x
 
 dsout.to_netcdf(fout,unlimited_dims='year')
