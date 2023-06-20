@@ -9,11 +9,5 @@ while read f; do
     qsub $job
 done <cesm1.list
 
-# for i in {000..099}; do
-#     job="job"$i".job"
-#     sed 's/zqz/'$i'/g' template.sh > $job 
-#     qsub $job
-# done
-
 
 

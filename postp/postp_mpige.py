@@ -16,7 +16,7 @@ fout=dout+'mpige.globann.'+f.split('_')[-2]+'.'+f.split('_')[-1][:4]+'.nc'
 dsout=xr.Dataset()
 dsout.attrs={'landarea':lfile}
 
-da=1e-3*xr.open_dataset(f).nbp
+da=1e3*xr.open_dataset(f).nbp
 da.attrs['units']='gC/m2/s'
 x=gmean(amean(da),la).isel(biome=0)
 dsout['NBP']=x
