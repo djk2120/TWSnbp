@@ -33,7 +33,7 @@ for f in files:
         elif v=='SW':
             das=[get_sw(f)]
         elif v=='VPD':
-            das=get_vpd(f)
+            das=get_vpd(f,la)
             
         for da in das:
             x=gmean(amean(da),la)

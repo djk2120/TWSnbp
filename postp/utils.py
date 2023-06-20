@@ -41,10 +41,11 @@ def get_sw(file):
         dz=xr.DataArray(1000*tmp.DZSOI.sel(lat=30,lon=105,method='nearest')[:ns].values,
                         dims=sdim,name='Soil thickness',attrs={'units':'m'})
     sw=(dz*ds.H2OSOI).sum(dim=sdim).compute()
+    sw.name='SW'
     
     return sw
 
-def get_vpd(file):
+def get_vpd(file,la):
     rh2m=preprocess(xr.open_dataset(file.replace('NBP','RH2M'))).RH2M
     tsa=preprocess(xr.open_dataset(file.replace('NBP','TSA'))).TSA
     t=tsa-273.15
@@ -55,8 +56,13 @@ def get_vpd(file):
     vp=(esat*rh2m/100).compute()
     vp.name='VP'
     vp.attrs={'long_name':'2m vapor pressure','units':'kPa'}
+    
+    ix=abs(vpd.lat)<=24
+    vpdt=la.sum()/la.where(ix).sum()*vpd.where(ix)
+    vpdt.name='VPD_TROP'
+    vpdt.attrs={'long_name':'2m vapor pressure deficit','units':'kPa'}
 
-    return [rh2m,tsa,vpd,vp]
+    return [rh2m,tsa,vpd,vp,vpdt]
 
 def get_tsatrop(f,la):
     ds=preprocess(xr.open_dataset(f.replace('NBP','TSA')))
