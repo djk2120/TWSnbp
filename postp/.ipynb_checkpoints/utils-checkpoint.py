@@ -4,7 +4,7 @@ import numpy as np
 def amean(da):
     #annual mean
     m  = da['time.daysinmonth']
-    xa = 1/m.groupby('time.year').sum()*(m*da).groupby('time.year').sum().compute()
+    xa = 1/365*(m*da).groupby('time.year').sum().compute()
     xa.name=da.name
     xa.attrs=da.attrs
     return xa
@@ -64,7 +64,6 @@ def get_sw(file):
     else:
         dz,sdim=get_dz('CESM1')
 
-    ds=preprocess(xr.open_dataset(file.replace('NBP','H2OSOI')))
     sw=(dz*ds.H2OSOI).sum(dim=sdim).compute()
     sw.name='SW'
     
@@ -81,31 +80,6 @@ def get_sw1m(file):
     sw.name='SW1M'
     
     return sw
-
-def calcvpdq(tas,huss):
-    t=tas-273.15
-    esat=0.61094*np.exp(17.625*t/(t+234.04)).compute()
-    vp=1e2/(1+0.622/huss)  #kpa
-    vp.name='VP'
-    vp.attrs={'long_name':'2m vapor pressure','units':'kPa'}
-    vpd=esat-vp
-    vpd.name='VPD'
-    vpd.attrs={'long_name':'2m vapor pressure deficit','units':'kPa'}
-    
-    return [vpd,vp]
-
-
-def calc_vpd(tsa,rh2m):
-    t=tsa-273.15
-    esat=0.61094*np.exp(17.625*t/(t+234.04)).compute()
-    vpd=(esat*(1-rh2m/100)).compute()
-    vpd.name='VPD'
-    vpd.attrs={'long_name':'2m vapor pressure deficit','units':'kPa'}
-    vp=(esat*rh2m/100).compute()
-    vp.name='VP'
-    vp.attrs={'long_name':'2m vapor pressure','units':'kPa'}
-    
-    return [vpd,vp]
 
 
 def get_vpd(file,la):

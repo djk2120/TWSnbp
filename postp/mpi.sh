@@ -7,7 +7,7 @@ while read f; do
     sed 's/num/'$j'/g' template.sh > $job 
     sed -i 's:file:'$f':g' $job
     qsub $job
-done <mpi12.list
+done <mpige.list
 
 
 

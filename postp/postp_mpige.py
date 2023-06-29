@@ -18,7 +18,7 @@ dsout.attrs={'landarea':lfile}
 
 da=1e3*xr.open_dataset(f).nbp
 da.attrs['units']='gC/m2/s'
-x=gmean(amean(da),la).isel(biome=0)
+x=gmean(amean(da),la)
 dsout['NBP']=x
 
 da=xr.open_dataset(f.replace('nbp','mrso')).mrso
