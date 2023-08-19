@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/glade/u/home/djk2120/TWSnbp/postp/postp_mpige.py", line 20, in <module>
+    das={vmap[v]:xr.open_mfdataset(fs[vs==v],combine='by_coords')[v] for v in dvs}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/djk2120/TWSnbp/postp/postp_mpige.py", line 20, in <dictcomp>
+    das={vmap[v]:xr.open_mfdataset(fs[vs==v],combine='by_coords')[v] for v in dvs}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/djk2120/miniconda3/envs/ppe-py/lib/python3.11/site-packages/xarray/backends/api.py", line 977, in open_mfdataset
+    raise OSError("no files to open")
+OSError: no files to open

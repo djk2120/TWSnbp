@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import dask
 
 def amean(da):
     #annual mean
@@ -58,17 +59,7 @@ def get_dz1m(mdl):
     return dz1m,sdim
     
     
-def get_sw(file):
-    if 'CESM2' in file:
-        dz,sdim=get_dz('CESM2')
-    else:
-        dz,sdim=get_dz('CESM1')
 
-    ds=preprocess(xr.open_dataset(file.replace('NBP','H2OSOI')))
-    sw=(dz*ds.H2OSOI).sum(dim=sdim).compute()
-    sw.name='SW'
-    
-    return sw
 
 def get_sw1m(file):
     if 'CESM2' in file:
@@ -133,3 +124,20 @@ def get_tsatrop(f,la):
     da=la.sum()/la.where(ix).sum()*ds['TSA'].where(ix)
     da.name='TSA_TROP'
     return da
+
+
+def get_sw(files):
+    if 'CESM2' in files[0]:
+        dz,sdim=get_dz('CESM2')
+    else:
+        dz,sdim=get_dz('CESM1')
+
+    ds=preprocess(xr.open_mfdataset([f.replace('NBP','H2OSOI') for f in files],combine='by_coords'))
+
+    with dask.config.set(**{'array.slicing.split_large_chunks': True}):
+        sw=(dz*ds.H2OSOI).sum(dim=sdim).compute()
+    sw.name='SW'
+    sw.attrs={'long_name':'total column soil water','units':'mm'}
+    
+    return sw
+
