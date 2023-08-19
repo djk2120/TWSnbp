@@ -8,3 +8,4 @@
 *.mat
 *.nc
 *core*
+*ipynb_checkpoints*
