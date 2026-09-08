@@ -44,8 +44,8 @@ for yr in yrs:
     m=mg.unstack()
     
     #write to file
-    dout='/glade/derecho/scratch/djk2120/postp/twsnbp/cesm2/slopes/'
-    fout = f.split('/')[-1].replace('gridded', yr+'.slope')
+    fout = f.replace('gridded', 'slopes')
+    fout = fout.replace('.slopes.', '.{}.slopes.'.format(yr))
     dsout = xr.Dataset({'nbp_tws_slope':m})
     dsout['SM_variance'] = x.var(dim='year')
-    dsout.to_netcdf(dout+fout)
+    dsout.to_netcdf(fout)
