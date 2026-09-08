@@ -62,19 +62,13 @@ def gmean(da,la):
 
 def fix_time(ds):
     yr0=str(ds['time.year'][0].values)
-    ds['time']=xr.cftime_range(yr0,periods=len(ds.time),freq='MS',calendar='noleap')
+    ds['time']=xr.date_range(yr0,periods=len(ds.time),freq='MS',calendar='noleap')
     return ds
 
 def preprocess(ds):
-    #dvs=[list(ds.data_vars)[-1]]
-    dvs=[]
-    
-    if float(abs((ds.time[1]-ds.time[0])/(28*24*60*60*1e9)-1))<0.05:
-        nt=len(ds.time)
-        yr0=ds['time.year'].values[0]
-        ds['time']=xr.cftime_range(str(yr0),periods=nt,freq='MS',calendar='noleap')
-    if len(dvs)>0:
-        ds=ds[dvs]
+    nt=len(ds.time)
+    yr0=ds['time.year'].values[0]
+    ds['time']=xr.cftime_range(str(yr0),periods=nt,freq='MS',calendar='noleap')
     return ds
 
 def get_sw(f):
